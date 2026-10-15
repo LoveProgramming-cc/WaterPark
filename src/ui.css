@@ -1,0 +1,125 @@
+html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+canvas { display: block; }
+#hud { position: fixed; inset: 0; pointer-events: none; font-family: "Songti SC", "STSong", "SimSun", serif; }
+#subDoc { position: absolute; left: 0; right: 0; bottom: 9%; text-align: center; color: #f4f2ea;
+  font-size: 24px; letter-spacing: 0.12em; text-shadow: 0 0 6px rgba(0,0,0,.75), 0 1px 2px rgba(0,0,0,.9);
+  opacity: 0; transition: opacity .7s; }
+#subSelf { position: absolute; left: 13%; bottom: 20%; color: #d2d6d0; font-size: 21px; letter-spacing: 0.2em;
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif; text-shadow: 0 0 5px rgba(0,0,0,.8); opacity: 0; transition: opacity .5s; }
+#subPA { position: absolute; left: 0; right: 0; top: 8%; text-align: center; color: #dfe6e2; font-size: 16px;
+  letter-spacing: 0.3em; font-family: "Heiti SC", "Microsoft YaHei", sans-serif; opacity: 0; transition: opacity .6s;
+  text-shadow: 0 0 5px rgba(0,0,0,.8); }
+#prompt { position: absolute; left: 0; right: 0; top: 58%; text-align: center; color: #e8ebe6; font-size: 14px;
+  letter-spacing: 0.3em; font-family: "Heiti SC", "Microsoft YaHei", sans-serif; opacity: 0; transition: opacity .25s;
+  text-shadow: 0 0 4px rgba(0,0,0,.9); }
+#subDoc.on, #subSelf.on, #subPA.on, #prompt.on { opacity: 1; }
+#breath { position: absolute; left: 50%; bottom: 4%; width: 140px; height: 2px; margin-left: -70px;
+  background: rgba(255,255,255,.12); opacity: 0; transition: opacity .4s; }
+#breath.on { opacity: 1; }
+#breath i { display: block; height: 100%; width: 100%; background: rgba(230,245,245,.8); }
+#fade { position: fixed; inset: 0; background: #000; opacity: 1; pointer-events: none; }
+#paper { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column;
+  background: rgba(0,0,0,.45); }
+#paper.on { display: flex; }
+#paperBody { background: #efe9d6; color: #33312b; padding: 30px 38px; max-width: 78vw; max-height: 78vh; overflow: hidden;
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif; font-size: 19px; line-height: 2; box-shadow: 0 10px 40px rgba(0,0,0,.5);
+  transform: rotate(-0.6deg); }
+#paperBody img { display: block; max-width: 72vw; max-height: 70vh; }
+#paperBody table { border-collapse: collapse; }
+#paperBody td, #paperBody th { border-bottom: 1px solid #b9b19a; padding: 2px 14px; text-align: left; font-weight: 400; }
+#paperBody .faint { opacity: .45; }
+#paperBody .mark { color: #9c2f24; }
+#paper .hint { color: #cfcfc8; font-size: 12px; letter-spacing: .3em; font-family: sans-serif; }
+#veil { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  background: #06090a; color: #b9c4c2; font-family: "Songti SC", "STSong", "SimSun", serif; cursor: pointer; user-select: none;
+  transition: opacity 1.2s; }
+#veil.gone { opacity: 0; pointer-events: none; }
+#veil h1 { font-weight: 400; font-size: 28px; letter-spacing: .6em; margin: 0 0 10px .6em; }
+#veil p { margin: 0; font-size: 14px; letter-spacing: .25em; opacity: .8; }
+#veil .keys { font-size: 12px; opacity: .5; }
+#end { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+  background: #f3f1ea; color: #44433e; font-family: "Songti SC", "STSong", "SimSun", serif; }
+#end.on { display: flex; }
+#end h2 { font-weight: 400; font-size: 26px; letter-spacing: .3em; margin: 0; }
+#end p { margin: 0; font-size: 15px; letter-spacing: .2em; opacity: .7; white-space: pre-line; text-align: center; line-height: 2; }
+#end a { color: inherit; font-size: 13px; letter-spacing: .3em; opacity: .6; margin-top: 20px; }
+#goal { position: absolute; left: 28px; top: 24px; color: #dfe6e2; font-size: 14px; letter-spacing: 0.3em;
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif; opacity: 0; transition: opacity 1.2s; text-shadow: 0 0 5px rgba(0,0,0,.85); }
+#goal.on { opacity: .72; }
+#goal::before { content: "· "; }
+
+#scare { position: fixed; inset: 0; z-index: 30; display: none; background: #000; }
+#scare.on { display: block; }
+#scare canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#scareText { position: absolute; left: 0; right: 0; bottom: 7%; text-align: center; font-family: "Songti SC", "STSong", "SimSun", Georgia, serif; color: #b3261e; font-size: min(3.8vw, 6.5vh); letter-spacing: 0.34em; text-shadow: 0 0 10px rgba(0,0,0,.9), 0 0 2px #000; }
+body.en #scareText { letter-spacing: 0.08em; font-style: italic; }
+#scareText span { display: inline-block; opacity: 0; }
+#scareText span.on { opacity: 1; }
+#scareText div { margin: 0.1em 0; }
+
+#veil .warn { max-width: 34em; line-height: 1.7; letter-spacing: .12em; font-size: 12.5px; opacity: .72; text-align: center; }
+#veil button, #pause button { background: none; border: 1px solid rgba(255,255,255,.55); color: inherit; font: inherit; font-size: 15px; letter-spacing: .4em; padding: 9px 30px 9px 36px; cursor: pointer; }
+#veil button:hover, #pause button:hover { background: rgba(255,255,255,.12); }
+.settings { display: grid; gap: 7px; font-size: 13px; letter-spacing: .12em; opacity: .85; margin: 6px 0; }
+.settings label { display: flex; justify-content: space-between; align-items: center; gap: 22px; min-width: 250px; }
+.settings select, .settings input:not([type=checkbox]) { background: rgba(255,255,255,.08); color: inherit; border: 1px solid rgba(255,255,255,.3); font: inherit; padding: 3px 6px; width: 130px; }
+.settings select option { color: #000; }
+.settings p { margin: 0; font-size: 11px; opacity: .55; }
+#pause { position: fixed; inset: 0; z-index: 40; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: rgba(0,0,0,.72); color: #e8ebe6; font-family: "Songti SC", "STSong", "SimSun", serif; }
+#pause.on { display: flex; }
+#pause h2 { font-weight: 400; letter-spacing: .6em; margin: 0 0 6px .6em; }
+body.en #subSelf, body.en #subDoc, body.en #subPA, body.en #goal, body.en #prompt { letter-spacing: .04em; }
+body.en #veil h1, body.en #pause h2 { letter-spacing: .3em; }
+
+#hud { z-index: 5; }
+#paper { z-index: 6; }
+#veil, #end { z-index: 20; }
+
+/* guidance a first-time player cannot miss */
+#subSelf { left: 0; right: 0; text-align: center; bottom: 17.5%; font-size: 23px; color: #e4e7df; text-shadow: 0 0 7px rgba(0,0,0,.9), 0 1px 2px #000; }
+#prompt { font-size: 17px; }
+#goal { font-size: 16px; }
+#goal.on { opacity: .88; }
+#goal::before { content: "◆ "; font-size: .7em; vertical-align: .15em; }
+#goalBig { position: absolute; left: 0; right: 0; top: 15%; text-align: center; color: #f1f3ec; font-size: 26px; letter-spacing: .28em;
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif; text-shadow: 0 0 10px rgba(0,0,0,.95), 0 1px 3px #000; opacity: 0; transition: opacity .8s; }
+#goalBig.on { opacity: 1; }
+#goalBig small { display: block; margin-top: .6em; font-size: 13px; letter-spacing: .3em; opacity: .65; font-family: "Heiti SC", "Microsoft YaHei", sans-serif; }
+body.en #goalBig { letter-spacing: .05em; }
+#way { position: absolute; left: 0; top: 0; color: #f4f1dc; font-size: 15px; font-family: "Heiti SC", "Microsoft YaHei", sans-serif; text-align: center;
+  transform: translate(-50%, -50%); text-shadow: 0 0 6px #000, 0 0 2px #000; opacity: 0; transition: opacity .5s; white-space: nowrap; line-height: 1.15; }
+#way.on { opacity: .9; }
+#way small { display: block; font-size: 11px; opacity: .8; }
+
+/* hard mode: the child's line goes back to where it was, small and off to the side */
+body.hard #subSelf { left: 13%; right: auto; text-align: left; bottom: 20%; font-size: 21px; color: #d2d6d0; }
+body.hard #goal { font-size: 14px; }
+body.hard #goal.on { opacity: .72; }
+
+#scareText { bottom: auto; top: 44%; transition: opacity .5s; }
+#scareText div { margin: .5em 0; }
+
+details.fold { text-align: center; font-size: 13px; letter-spacing: .25em; }
+details.fold summary { cursor: pointer; opacity: .7; list-style: none; padding: 4px 14px; }
+details.fold summary::-webkit-details-marker { display: none; }
+details.fold summary::before { content: "▸ "; }
+details.fold[open] summary::before { content: "▾ "; }
+details.fold summary:hover { opacity: 1; }
+details.fold .settings { text-align: left; margin-top: 10px; }
+
+#veil .keys, #veil .warn { max-width: 92vw; text-align: center; line-height: 1.7; }
+
+/* what I have found of my own */
+#inv { position: absolute; left: 28px; top: 54px; color: #dfe6e2; font-size: 13px; letter-spacing: .15em; font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+  text-shadow: 0 0 5px rgba(0,0,0,.85); opacity: 0; transition: opacity 1s; }
+#inv.on { opacity: .6; }
+#end .help { position: absolute; bottom: 28px; left: 0; right: 0; text-align: center; font-size: 12px; letter-spacing: .1em; opacity: .55; font-family: "Heiti SC", "Microsoft YaHei", sans-serif; }
+/* my notice, and their phone */
+#paperBody .note { font-family: "Kaiti SC", "STKaiti", "KaiTi", serif; color: #2d3a78; font-size: 19px; line-height: 2; text-align: left; }
+#paperBody .note b { display: block; text-align: center; font-size: 28px; letter-spacing: .4em; }
+#paperBody .note li.got { text-decoration: line-through; opacity: .55; }
+#paperBody .phone { background: #10161c; color: #d8e2ea; padding: 22px 26px; border-radius: 18px; text-align: left; font-family: "Heiti SC", "Microsoft YaHei", sans-serif; min-width: 280px; line-height: 1.7; }
+#paperBody .phone b { display: block; text-align: center; font-size: 30px; font-weight: 300; }
+#paperBody .phone small { display: block; opacity: .6; text-align: center; margin: 6px 0 14px; }
+#paperBody .phone p { margin: 8px 0; background: #1d2731; padding: 6px 10px; border-radius: 8px; }
+#paperBody .phone i { display: block; font-style: normal; font-size: 11px; opacity: .55; }
