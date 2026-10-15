@@ -45,7 +45,7 @@ export function buildWorld(scene, G) {
   for (const m of models) (byId[m.id] ||= []).push(m);
   const loads = [];
   for (const [id, list] of Object.entries(byId))
-    loads.push(loader.loadAsync(`/models/${id}/${id}_1k.gltf`).then((g) => {
+    loads.push(loader.loadAsync(`${import.meta.env.BASE_URL}models/${id}/${id}_1k.gltf`).then((g) => {
       const src = g.scene;
       src.traverse((o) => {
         if (!o.isMesh) return;
