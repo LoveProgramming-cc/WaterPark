@@ -323,6 +323,12 @@ export function placeProps(scene, G, K, M, R, PLAT, MATS) {
     d.set(shut);
     return d;
   };
+  // Shut behind the player, clear of their collision radius when they enter SLIDE.
+  const slideDoor = mkDoor(add(new THREE.BoxGeometry(1.6, 2.5, 0.1), M.steelD, 31.6, 1.25, 13.35), addSolid(30.8, 32.4, 0, 2.5, 13.3, 13.4), false);
+  // Block only the middle of route A; leave the pool and open ground clear.
+  // An invisible spatial anomaly: no rendered mesh.
+  // Full height and below the pool floor: neither jumping nor diving bypasses it.
+  const slideBarrier = mkDoor(new THREE.Group(), addSolid(27.08, 27.32, -1.3, 2.6, 11.5, 12.85), false);
   const flap = mkDoor(add(new THREE.BoxGeometry(0.1, 1.02, 2.75), M.wood, 36.25, 0.71, 16.52), addSolid(36.2, 36.3, 0.2, 1.22, 15.15, 17.9), true);
   const cctvDoor = mkDoor(add(new THREE.BoxGeometry(0.05, 1.8, 0.94), M.steelD, 44, 1.1, 16.4), addSolid(43.9, 44.1, 0.2, 2.2, 15.9, 16.9), true);
   add(new THREE.PlaneGeometry(0.5, 0.16), signMat(T.sign('员工专用', { size: 84, w: 500, h: 160, ...GRY })), 43.82, 2.3, 16.4, -Math.PI / 2);
@@ -487,5 +493,5 @@ export function placeProps(scene, G, K, M, R, PLAT, MATS) {
   add(new THREE.BoxGeometry(0.03, 0.9, 1.3), pm({ color: '#a8875a', roughness: 0.9 }), 30.16, 1.5, 17.6);
   lostNote.position.x = 30.19;
 
-  return { mine: { goggles, torch, whistle, band, phone, lockerB }, maps, towel, ring, arm, grate, grateSolid, fog, fogMesh, handprints, footprints, sprayTex, SHOWER, fallTex, drips, flotsam, foam, riverShut, floats, t3Door, flap, cctvDoor, svcDoor, monitors, cams, wheelItem, valveWheel, mapLie };
+  return { mine: { goggles, torch, whistle, band, phone, lockerB }, maps, towel, ring, arm, grate, grateSolid, fog, fogMesh, handprints, footprints, sprayTex, SHOWER, fallTex, drips, flotsam, foam, riverShut, floats, t3Door, slideDoor, slideBarrier, flap, cctvDoor, svcDoor, monitors, cams, wheelItem, valveWheel, mapLie };
 }

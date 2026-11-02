@@ -171,12 +171,22 @@ export function createWater(renderer, scene, camera, G) {
       const s = renderer.getDrawingBufferSize(new THREE.Vector2());
       sceneRT.setSize(s.x, s.y);
       reflRT.setSize(s.x >> 1, s.y >> 1);
+      api.cleared = false;
       mat.uniforms.uRes.value.copy(s);
     }
     render(r, writeBuffer, readBuffer) {
       const ac = r.autoClear;
       r.autoClear = true;
-      renderReflection();
+      if (api.refl) renderReflection();
+      else if (!api.cleared) {
+        // phones: no mirrored second pass; the water shows the dark fog instead
+        const c0 = r.getClearColor(new THREE.Color()), a0 = r.getClearAlpha();
+        r.setRenderTarget(reflRT);
+        r.setClearColor(0x1a2224, 1);
+        r.clear();
+        r.setClearColor(c0, a0);
+        api.cleared = true;
+      }
       r.setRenderTarget(sceneRT);
       r.render(scene, camera);
       r.setRenderTarget(readBuffer);
@@ -187,10 +197,13 @@ export function createWater(renderer, scene, camera, G) {
     }
   }
 
-  return {
+  const api = {
+    refl: true,
+    cleared: false,
     mesh, uniforms: mat.uniforms, pass: new WorldPass(),
     setLevel(y) {
       mesh.position.y = y;
     },
   };
+  return api;
 }

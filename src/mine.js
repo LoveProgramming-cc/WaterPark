@@ -51,7 +51,7 @@ I({ x: 32.3, y: 6.05, z: 3.0, r: 1.5, label: '手电筒', enabled: () => !S.has.
   ui.say(['我的手电筒', '还亮着'], 2);
   ui.prompt('F  开关手电筒');
   after(4, () => ui.prompt(null));
-  if (S.phase < 3) return;
+  if (S.phase < 3 || S.slideChase) return;
   // the lights in here go, and something is coming up the stairs. The quick way down is the slide.
   zoneTarget[Z.SLIDE] = 0.05;
   flAmp[Z.SLIDE] = 0;

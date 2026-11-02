@@ -50,7 +50,7 @@ export function caught() {
     return;
   }
   after(0.5 + T + 0.05, () => {
-    let best = S.long ? [50.6, 0, S.longCk || 21.4] : S.chase ? [46.4, 0.2, 17.2] : S.finale ? (S.fin === 'pump' ? [44.4, 0.2, 50.4] : [33, 0, 45.6]) : S.gate ? [36, 0.2, 22.6] : null;
+    let best = S.slideChase ? [31.6, 0, 11.8] : S.long ? [50.6, 0, S.longCk || 21.4] : S.chase ? [46.4, 0.2, 17.2] : S.finale ? (S.fin === 'pump' ? [44.4, 0.2, 50.4] : [33, 0, 45.6]) : S.gate ? [36, 0.2, 22.6] : null;
     if (!best) {
       const hi = S.phase === 3;
       let bd = 1e9;
@@ -77,6 +77,14 @@ export function caught() {
     const s = thing.deepNear(best[0] + 12, best[2] + 10);
     if (s && !S.long) thing.place(s[0], s[1]);
     S.wEvent = false;
+    if (S.slideChase) {
+      S.slideChase.leg = 1;
+      S.slideChase.pos.copy(SLIDE_DOWN[0]);
+      S.slideChase.wait = S.t + slideWait();
+      thing.mode = 'off';
+      thing.pin = SLIDE_DOWN[0].clone().add(new THREE.Vector3(0, 1.08, 0));
+      thing.body.visible = true;
+    }
     if (S.finale) {
       S.finale = 1;
       thing.mode = 'off';
@@ -215,13 +223,15 @@ export function updateStrobe() {
 }
 // while locked: the view turns to it and the mouse does nothing
 export function updateLock() {
-  if (!(S.lockT > S.t) || S.busy || thing.mode !== 'walk') return;
-  const dx = thing.x - player.pos.x, dz = thing.z - player.pos.z, dy = thing.y + 0.55 - (player.pos.y + player.eyeH);
+  if (S.busy || S.ending || S.slideChase || !(S.lockT > S.t) || thing.mode !== 'walk') return false;
+  const target = { x: thing.x, y: thing.y, z: thing.z };
+  const dx = target.x - player.pos.x, dz = target.z - player.pos.z, dy = target.y + 0.55 - (player.pos.y + player.eyeH);
   let yaw = Math.atan2(-dx, -dz);
   while (yaw - player.yaw > Math.PI) yaw -= 2 * Math.PI;
   while (yaw - player.yaw < -Math.PI) yaw += 2 * Math.PI;
   player.tyaw = yaw;
   player.tpitch = Math.atan2(dy, Math.hypot(dx, dz));
+  return true;
 }
 
 // out of the control room, round the counter, across the hall to the passage: it is somewhere among them
@@ -303,6 +313,67 @@ export function endChase() {
   if (thing.mode === 'walk') (thing.mode = 'hunt'), (thing.body.visible = false);
 }
 
+// The other way back with the wheel: it comes down from the slide platform.
+// The player can retreat through the wet corridor and collect the whistle there.
+const SLIDE_DOWN = [[31.5, 6, 4.5], [30.2, 6, 2.75], [23, 3, 2.75], [21.75, 3, 4.3], [21.75, 0, 11.2]].map((p) => new THREE.Vector3(...p));
+// Faster descent still leaves time to take the longer route before it blocks the exit.
+const slideWait = () => cfg.diff === 'h' ? 7 : cfg.diff === 'e' ? 5 : 6;
+export function updateSlideChase(dt) {
+  const p = player.pos, id = roomAt(p.x, p.z)?.id;
+  if (!S.slideChase) {
+    if (S.phase !== 3 || !S.wheel || S.finale || S.busy || S.ending || S.flags.longDone || S.flags.slideRoute || id !== 'SLIDE') return;
+    endChase();
+    S.turn = null;
+    S.vision = null;
+    player.freeze = false;
+    S.flags.slideRoute = true;
+    S.slideChase = { leg: 1, pos: SLIDE_DOWN[0].clone(), wait: S.t + slideWait() };
+    world.obj.slideDoor.set(true);
+    world.obj.slideBarrier.set(true);
+    sfx.clunk();
+    thing.mode = 'off';
+    thing.pin = SLIDE_DOWN[0].clone().add(new THREE.Vector3(0, 1.08, 0));
+    thing.body.visible = true;
+    zoneTarget[Z.SLIDE] = 0.2;
+    sfx.sting();
+    // The invisible obstruction needs an explanation even on hard difficulty.
+    ui.say(['前面明明什么都没有 却过不去', '绕开这里 再去淋浴间', ...(cfg.diff !== 'h' ? ['它在滑梯上面', '路上可以拿口哨'] : [])], 2);
+  }
+  const c = S.slideChase;
+  if (S.ending) { S.slideChase = null; return; }
+  if (S.busy) return;
+  if (S.wEvent || S.ride || !['SLIDE', 'W1', 'W2', 'W3'].includes(id)) {
+    S.slideChase = null;
+    thing.pin = null;
+    if (!S.wEvent) {
+      thing.mode = 'hunt';
+      thing.body.visible = false;
+      thing.hide = 4;
+      thing.react = -2;
+    }
+    return;
+  }
+  if (c.leg < SLIDE_DOWN.length) {
+    let travel = S.freezeT > S.t || c.wait > S.t ? 0 : D().walk * dt;
+    while (travel > 0 && c.leg < SLIDE_DOWN.length) {
+      const target = SLIDE_DOWN[c.leg], distance = c.pos.distanceTo(target);
+      if (travel < distance) { c.pos.lerp(target, travel / distance); break; }
+      c.pos.copy(target);
+      travel -= distance;
+      c.leg++;
+    }
+    thing.place(c.pos.x, c.pos.z);
+    thing.y = c.pos.y + 1.08;
+    thing.pin.copy(c.pos).y += 1.08;
+    if (p.distanceTo(c.pos) < 0.85) return caught();
+    if (c.leg === SLIDE_DOWN.length) {
+      thing.pin = null;
+      thing.mode = 'walk';
+      thing.walkSpeed = D().walk;
+    }
+  } else walkerFollow(dt);
+}
+
 // ---------------- turning round ----------------
 // Some things only happen when you turn your back on where you were looking: `fn` when you have turned, `late` if you never do.
 export const angDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
@@ -335,7 +406,7 @@ const FRONT = { e: 0.5, n: 0.7, h: 0.9 };
 export function updateLong(dt) {
   const p = player.pos, id = roomAt(p.x, p.z)?.id;
   if (!S.long) {
-    if (S.wheel && !S.flags.longDone && !S.busy && id === 'P2' && p.z > 26.6 && p.z < 27.6 && player.vel.z > 0.3) {
+    if (S.wheel && !S.flags.longDone && !S.flags.slideRoute && !S.busy && id === 'P2' && p.z > 26.6 && p.z < 27.6 && player.vel.z > 0.3) {
       // you walked into the short passage to the snack bar. It is not that passage any more.
       S.long = true;
       endChase();

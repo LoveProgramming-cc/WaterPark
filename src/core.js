@@ -11,6 +11,7 @@ import { createWater } from './water.js';
 import { Player, Input } from './player.js';
 import { Thing } from './thing.js';
 import { sfx } from './sfx.js';
+import { TOUCH } from './i18n.js';
 
 // ---------------- renderer ----------------
 export const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
@@ -76,6 +77,8 @@ export const composer = new EffectComposer(renderer);
 composer.addPass(water.pass);
 export const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.32, 0.85, 0.95);
 composer.addPass(bloom);
+// phones: the glow and the water's mirrored pass are the two things they cannot afford
+if (TOUCH) (bloom.enabled = false), (water.refl = false);
 export const trail = new AfterimagePass(0.5);
 composer.addPass(trail);
 composer.addPass(new OutputPass());

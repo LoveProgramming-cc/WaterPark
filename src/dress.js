@@ -186,7 +186,8 @@ export function dress(K, R) {
     cageLamp('SLIDE', 21.25, 1.9, 7.5, 0.4);
     ladder(26.5, 8.6, 1, 0);
     ringStack(24.2, 12.2, 5);
-    wetSign(25.3, 10.4, 2.2);
+    // Keep the west-side detour clear when the chase partition closes.
+    wetSign(28.5, 12.2, 2.2);
     box('red', 30.82, 32.18, PLAT + 0.95, PLAT + 1.0, 5.57, 5.63, false);
   }
 

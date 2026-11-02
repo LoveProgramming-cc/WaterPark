@@ -13,6 +13,9 @@ export class Input {
     this.mouseDown = false;
     this.dx = 0;
     this.dy = 0;
+    // on-screen stick: forward and right, each -1..1 (touch.js)
+    this.stick = null;
+    this.touch = false;
     this.el = el;
     window.addEventListener('keydown', (e) => {
       if (!this.keys[e.code]) this.edge[e.code] = true;
@@ -26,7 +29,7 @@ export class Input {
     });
     document.addEventListener('mouseup', () => (this.mouseDown = false));
     document.addEventListener('mousemove', (e) => {
-      if (!this.locked || (this.drag && !this.mouseDown)) return;
+      if (!this.locked || this.touch || (this.drag && !this.mouseDown)) return;
       this.dx += e.movementX;
       this.dy += e.movementY;
     });
@@ -40,6 +43,8 @@ export class Input {
     this.drag = this.locked = true;
   }
   capture() {
+    // touch screens have no pointer to lock: the on-screen controls are the input
+    if (this.touch) return void (this.locked = true);
     if (this.drag) return;
     try {
       const p = this.el.requestPointerLock();
@@ -118,8 +123,10 @@ export class Player {
       if (this.input.locked && !this.freeze) {
         f = (k.KeyW || k.ArrowUp ? 1 : 0) - (k.KeyS || k.ArrowDown ? 1 : 0);
         s = (k.KeyD || k.ArrowRight ? 1 : 0) - (k.KeyA || k.ArrowLeft ? 1 : 0);
+        if (this.input.stick) (f = this.input.stick.f), (s = this.input.stick.s);
       }
-      const n = Math.hypot(f, s) || 1, sin = Math.sin(this.yaw), cos = Math.cos(this.yaw);
+      // keys go full speed in any direction; the stick goes as far as it is pushed
+      const n = Math.max(1, Math.hypot(f, s)), sin = Math.sin(this.yaw), cos = Math.cos(this.yaw);
       const surf = w.surfaceAt(p.x, p.z, t);
       const gBase = w.groundAt(p.x, p.z, p.y, 0.32);
       this.depth = surf - gBase;

@@ -123,3 +123,46 @@ details.fold .settings { text-align: left; margin-top: 10px; }
 #paperBody .phone small { display: block; opacity: .6; text-align: center; margin: 6px 0 14px; }
 #paperBody .phone p { margin: 8px 0; background: #1d2731; padding: 6px 10px; border-radius: 8px; }
 #paperBody .phone i { display: block; font-style: normal; font-size: 11px; opacity: .55; }
+
+/* ---------------- touch screens ---------------- */
+body.touch { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; overscroll-behavior: none; }
+#fade { z-index: 3; }
+#touch { position: fixed; inset: 0; z-index: 2; }
+.tzone { position: absolute; top: 0; bottom: 0; touch-action: none; }
+.tzone.left { left: 0; width: 42%; }
+.tzone.right { right: 0; width: 58%; }
+/* the stick appears where the thumb lands */
+.stick { position: absolute; left: -52px; top: -52px; width: 104px; height: 104px; border-radius: 50%; pointer-events: none;
+  border: 1.5px solid rgba(230,235,228,.22); background: rgba(230,235,228,.05); opacity: 0; transition: opacity .25s; }
+.stick.on { opacity: 1; transition: none; }
+.stick.run { border-color: rgba(230,235,228,.42); }
+.knob { position: absolute; left: 32px; top: 32px; width: 40px; height: 40px; border-radius: 50%; background: rgba(230,235,228,.28); }
+/* buttons: quiet, round, and only there when they mean something */
+.tbtn { position: absolute; display: flex; align-items: center; justify-content: center; border-radius: 50%; touch-action: none;
+  width: 58px; height: 58px; border: 1.5px solid rgba(230,235,228,.3); background: rgba(10,14,14,.22); color: rgba(235,238,232,.75);
+  font: 18px "Heiti SC", "Microsoft YaHei", sans-serif; transition: opacity .3s; }
+.tbtn.held { background: rgba(230,235,228,.2); }
+.tbtn.off { opacity: 0; pointer-events: none; }
+.tbtn.up { right: calc(22px + env(safe-area-inset-right)); bottom: calc(26px + env(safe-area-inset-bottom)); width: 66px; height: 66px; font-size: 24px; }
+.tbtn.dive { right: calc(100px + env(safe-area-inset-right)); bottom: calc(18px + env(safe-area-inset-bottom)); }
+.tbtn.act { right: calc(30px + env(safe-area-inset-right)); bottom: calc(112px + env(safe-area-inset-bottom)); width: auto; min-width: 64px; height: 50px;
+  border-radius: 25px; padding: 0 18px; font: 15px "Songti SC", "STSong", serif; letter-spacing: .2em; color: #f1f3ec; border-color: rgba(241,243,236,.55); }
+.tbtn.torch { right: calc(124px + env(safe-area-inset-right)); bottom: calc(96px + env(safe-area-inset-bottom)); width: 46px; height: 46px; font-size: 15px; }
+.tbtn.whistle { right: calc(178px + env(safe-area-inset-right)); bottom: calc(60px + env(safe-area-inset-bottom)); width: 46px; height: 46px; font-size: 15px; }
+.tbtn.hint, .tbtn.pause { top: calc(14px + env(safe-area-inset-top)); width: 40px; height: 40px; font-size: 14px; }
+.tbtn.pause { right: calc(16px + env(safe-area-inset-right)); }
+.tbtn.hint { right: calc(66px + env(safe-area-inset-right)); }
+.rotate { display: none; }
+@media (orientation: portrait) {
+  body.touch .rotate { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: #050707;
+    color: #cfd3cc; font: 16px "Songti SC", "STSong", serif; letter-spacing: .3em; }
+}
+/* short landscape screens: everything a size smaller, and long pages scroll instead of being cut off */
+@media (max-height: 500px) {
+  #veil, #pause { justify-content: safe center; overflow-y: auto; padding: 16px 0; gap: 9px; }
+  #veil h1 { font-size: 22px; margin-bottom: 2px; }
+  #paper { justify-content: safe center; overflow-y: auto; padding: 12px 0; }
+  #subSelf { font-size: 19px; bottom: 12%; }
+  #goalBig { font-size: 20px; top: 10%; }
+  #goal { font-size: 13px; left: calc(18px + env(safe-area-inset-left)); top: 14px; }
+}

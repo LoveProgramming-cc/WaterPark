@@ -38,7 +38,7 @@ export function buildWorld(scene, G) {
   }
 
 
-  const { mine, maps, towel, ring, arm, grate, grateSolid, fog, fogMesh, handprints, footprints, sprayTex, SHOWER, fallTex, drips, flotsam, foam, riverShut, floats, t3Door, flap, cctvDoor, svcDoor, monitors, cams, wheelItem, valveWheel, mapLie } = placeProps(scene, G, K, M, R, PLAT, MATS);
+  const { mine, maps, towel, ring, arm, grate, grateSolid, fog, fogMesh, handprints, footprints, sprayTex, SHOWER, fallTex, drips, flotsam, foam, riverShut, floats, t3Door, slideDoor, slideBarrier, flap, cctvDoor, svcDoor, monitors, cams, wheelItem, valveWheel, mapLie } = placeProps(scene, G, K, M, R, PLAT, MATS);
 
   // ---------------- models (CC0, Poly Haven) ----------------
   const loader = new GLTFLoader(), byId = {};
@@ -97,7 +97,7 @@ export function buildWorld(scene, G) {
       flap: [36.25, 1.0, 16.5], cctvDoor: [43.9, 1.2, 16.4], tapes: [45.8, 1.8, 15.4], wheel: [47.5, 1.0, 15.6], valve: [46.1, 1.2, 50.6], grate: [36.5, 0, 57.4], longDoor: [50.6, 1.2, 20.3],
     },
     respawn: [[11.5, 0, 32.5], [5.2, 0, 51], [24.9, 0, 45], [6.2, 0.2, 18.6], [17.6, 0.2, 20], [33, 0.2, 21.5], [39.8, 0.2, 23.8], [38, 0.2, 50.6], [31.3, 0.2, 54.5], [40, 0, 43.5], [27, 0, 60.5], [46, 0.2, 17.4], [24, 0, 8]],
-    obj: { mine, towel, ring, arm, grate, grateSolid, handprints, footprints, fogMesh, riverShut, floats, t3Door, flap, cctvDoor, svcDoor, monitors, camAfter: cams[6], wheelItem, valveWheel, flotsam },
+    obj: { mine, towel, ring, arm, grate, grateSolid, handprints, footprints, fogMesh, riverShut, floats, t3Door, slideDoor, slideBarrier, flap, cctvDoor, svcDoor, monitors, camAfter: cams[6], wheelItem, valveWheel, flotsam },
     level: WATER0, waveAmp: 1, currentScale: 1,
     update(t) {
       sprayTex.offset.y = t * 1.7;

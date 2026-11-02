@@ -48,12 +48,13 @@ export function takeWheel(quiet) {
   ui.say(['拿到了', '屏幕上 那是我', '后面那个是'], 2);
   // you are looking down at the desk. When you turn round it is in the doorway; then the lights go, and it comes.
   const sprung = () => {
-    if (S.busy || S.long || S.chase) return;
+    if (S.busy || S.long || S.chase || S.slideChase || S.flags.slideRoute) return;
     thing.pin = new THREE.Vector3(44.3, 1.28, 16.4);
     thing.body.visible = true;
     sfx.sting();
     S.dark = 0.5;
     after(0.55, () => {
+      if (S.slideChase || S.flags.slideRoute) return;
       thing.pin = null;
       thing.body.visible = false;
       startChase();

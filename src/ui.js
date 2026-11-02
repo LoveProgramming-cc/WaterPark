@@ -1,5 +1,5 @@
 import { face } from './face.js';
-import { t, cfg, saveCfg, LANGS } from './i18n.js';
+import { t, cfg, saveCfg, LANGS, TOUCH } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -311,7 +311,7 @@ export const ui = {
   },
   // fills in the start screen, the pause screen and the settings both of them carry
   initStatic(cb) {
-    const { onStart, onResume, onChange } = (this._cb = cb || this._cb);
+    const { onStart, onResume, onChange, onGyro } = (this._cb = cb || this._cb);
     const settings = () => {
       const box = document.createElement('div');
       box.className = 'settings';
@@ -346,6 +346,18 @@ export const ui = {
       calm.type = 'checkbox';
       calm.checked = cfg.calm;
       row('减少闪烁', calm).onchange = (e) => apply({ calm: e.target.checked });
+      if (TOUCH) {
+        row('视角灵敏度', sel([['0.6', t('低')], ['1', t('中')], ['1.5', t('高')], ['2.2', t('很高')]], String(cfg.sens))).onchange = (e) => apply({ sens: +e.target.value });
+        const gyro = document.createElement('input');
+        gyro.type = 'checkbox';
+        gyro.checked = cfg.gyro;
+        // asking for the motion sensors has to happen inside this tap
+        row('陀螺仪 转动手机来看', gyro).onchange = async (e) => {
+          apply({ gyro: e.target.checked });
+          await onGyro?.();
+          gyro.checked = cfg.gyro;
+        };
+      }
       for (const el of box.querySelectorAll('select,input')) el.addEventListener('keydown', (e) => e.stopPropagation());
       // folded away until asked for; stays open across the rebuild that a change of language causes
       const fold = document.createElement('details');
@@ -380,7 +392,9 @@ export const ui = {
       h('h1', '水上乐园'),
       p('本游戏含有闪烁的灯光、突然出现的画面和声音，以及溺水、被忽视的童年等内容。', 'warn'), p('如果你对闪光敏感，请勾选“减少闪烁”。', 'warn'),
       settings(), btn('开始', onStart),
-      p('WASD 移动 · 鼠标环顾 · Shift 跑 · 空格 跳 / 上浮 · C 下潜 · E 互动 · Esc 暂停', 'keys'), p('简单模式：H 提示 · 方向标记 · 物品发光', 'keys'), p('建议戴耳机', 'keys'),
+      ...(TOUCH
+        ? [p('左半屏 移动（推到底跑） · 右半屏 拖动环顾 · 双击右半屏 转身 · ↑ 跳 / 上浮 · ↓ 下潜', 'keys'), p('简单模式：? 提示 · 方向标记 · 物品发光', 'keys'), p('建议戴耳机 · 关掉静音', 'keys')]
+        : [p('WASD 移动 · 鼠标环顾 · Shift 跑 · 空格 跳 / 上浮 · C 下潜 · E 互动 · Esc 暂停', 'keys'), p('简单模式：H 提示 · 方向标记 · 物品发光', 'keys'), p('建议戴耳机', 'keys')]),
     );
     // restarting throws the run away, so it asks first
     const restart = btn('重新开始', () => {

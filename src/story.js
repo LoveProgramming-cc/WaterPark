@@ -148,7 +148,7 @@ export const VIS = {
   river: [39.8, 1.05, 32.2, 2.37, -0.1], pool: [15, 1.05, 36.6, Math.PI, -0.1], cctv: [38.4, 1.3, 16.6, -Math.PI / 2, 0], svc: [21.6, 1.05, 50.6, -Math.PI / 2, 0.1],
 };
 export function vision(k, text, dur = 1.15, force) {
-  if (S.vision || (S.finale && !force) || S.busy || S.ending || S.long || S.maze || thing.mode === 'walk' || player.mode === 'script' || ui.paperOpen) return;
+  if (S.vision || (S.finale && !force) || S.busy || S.ending || S.long || S.maze || S.slideChase || thing.mode === 'walk' || player.mode === 'script' || ui.paperOpen) return;
   const [x, y, z, yaw, pitch] = VIS[k];
   S.vision = { t: 0, dur, x, y, z, yaw, pitch };
   player.freeze = true;
@@ -238,7 +238,7 @@ export function startIntro() {
   world.waveAmp = 1;
   sfx.set('machine', 0.5);
   sfx.set('wash', 0.06);
-  ui.prompt('空格  上浮');
+  ui.prompt('按住空格  上浮');
 }
 export function updateIntro(dt, t) {
   const A = S.intro, surf = world.surfaceAt(15, 57, t);
@@ -251,11 +251,11 @@ export function updateIntro(dt, t) {
       A.stage = 2;
       A.air = 0;
       player.roll = 0;
-      ui.prompt('空格  上浮');
+      ui.prompt('按住空格  上浮');
     }
   } else {
-    if (input.hit('Space')) A.vy = Math.min(A.vy + 1.5, 2.3);
-    A.vy -= (2.4 + Math.max(0, Math.sin(t * 1.9)) * 1.4) * dt;
+    const lift = input.keys.Space ? 7 : 0;
+    A.vy = clamp(A.vy + (lift - 2.4 - Math.max(0, Math.sin(t * 1.9)) * 1.4) * dt, -2.3, 2.3);
   }
   A.d = clamp(A.d + A.vy * dt, -1.3, 0.13);
   if ((A.d >= 0.13 && A.vy > 0) || (A.d <= -1.3 && A.vy < 0)) A.vy = 0;

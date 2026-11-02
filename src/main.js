@@ -8,8 +8,9 @@ import { renderer, scene, camera, zoneLevel, zoneTarget, zoneFl, flAmp, flT, bak
 import { goal, askHint, updateWay, nag, initMarks, updateMarks } from './guide.js';
 import { startRide, updateVision, startPrologue, endPrologue, updateIntro, startP1, startP3 } from './story.js';
 import { updateWarps, takeWheel, mazeGo, updateMaze } from './space.js';
-import { caught, glimpse, updateStrobe, startChase, endChase, updateTurn, updateLong, updateLock, updateDunk, lockOn, walkerFollow, updateChaseTwist } from './scares.js';
+import { caught, glimpse, updateStrobe, startChase, endChase, updateTurn, updateLong, updateLock, updateDunk, lockOn, walkerFollow, updateChaseTwist, updateSlideChase } from './scares.js';
 import { updateMine, showInv, blow } from './mine.js';
+import { initTouch, updateTouch, askGyro, relabelTouch } from './touch.js';
 import { riverS, riverAt, updateFinale, updateGlass, finish } from './endings.js';
 
 // ---------------- per-frame rules ----------------
@@ -143,6 +144,7 @@ export function triggers(dt, t) {
 }
 
 export function interactions() {
+  S.near = null;
   S.paperT = ui.paperOpen ? (S.paperT || 0) + 1 / 60 : 0;
   if (ui.paperOpen) {
     if (S.paperT > 0.35 && Object.values(input.edge).some(Boolean)) {
@@ -169,7 +171,9 @@ export function interactions() {
     if (d < bd) (bd = d), (best = o);
   }
   if (S.phase === 4 && S.flags.glassHint && S.wipes < 20 && !best) return;
-  ui.prompt(best ? `E  ${t(best.label)}` : null);
+  // on a touch screen the button itself names the thing
+  S.near = best?.label || null;
+  ui.prompt(best && !input.touch ? `E  ${t(best.label)}` : null);
   if (best && input.hit('KeyE')) {
     sfx.tick();
     best.on();
@@ -232,14 +236,15 @@ export function frame(dt, draw = true) {
   if (S.intro) updateIntro(dt, t);
   scripted(dt);
   updateDunk(dt);
-  updateLock();
-  if (S.lockT > S.t) input.dx = input.dy = 0;
+  updateTouch();
+  if (updateLock()) input.dx = input.dy = 0;
   player.update(dt, t);
   camera.updateMatrixWorld();
   updateVision(dt, t);
   if (S.phase >= 0.5) {
     triggers(dt, t);
     updateLong(dt);
+    updateSlideChase(dt);
     updateWarps();
     updateMaze();
     updateMarks(t);
@@ -363,6 +368,7 @@ window.addEventListener('keydown', (e) => {
   if (e.code === 'Escape' && (input.drag || paused)) setPause(!paused);
 });
 window.addEventListener('blur', () => setPause(true));
+document.addEventListener('visibilitychange', () => document.hidden && setPause(true));
 // keep an eye on the frame rate: if it stays low for a couple of seconds, render fewer pixels; if it has room again, more
 let slow = 0, fast = 0;
 function adapt(raw) {
@@ -387,6 +393,11 @@ player.face(Math.PI, -0.05);
 export const q = new URLSearchParams(location.search);
 export function begin() {
   input.capture();
+  if (input.touch) {
+    askGyro();
+    // Android lets a page go full screen from a tap; iPhone Safari does not (added to the home screen it already is)
+    document.documentElement.requestFullscreen?.({ navigationUI: 'hide' }).catch(() => {});
+  }
   sfx.start();
   ui.veil(false);
   if (S.phase > -1) return;
@@ -395,13 +406,15 @@ export function begin() {
   dbg.go(skip);
   ui.fade(0, 2.5);
 }
-ui.initStatic({ onStart: begin, onResume: () => setPause(false), onChange() {
+ui.initStatic({ onStart: begin, onResume: () => setPause(false), onGyro: askGyro, onChange() {
   // language, name or sibling changed: redraw every sign in place and put the goal line back up in the new words
   redrawAll();
+  relabelTouch();
   if (S.goalText) ui.goal(S.goalText);
 } });
 renderer.domElement.addEventListener('click', () => !paused && input.capture());
 
+initTouch({ onPause: () => setPause(true) });
 initMarks();
 export const dbg = (window.__wp = {
   S, player, world, thing, zoneTarget, zoneLevel, flAmp, ui, mazeGo, lockOn, blow, showInv, startChase, endChase, setPause, cfg, riverS, riverAt, takeWheel, glimpse, caught, camera, renderer, setPR, composer, input, begin, G, roomAt, scene,
